@@ -14,7 +14,7 @@ public class Truck extends Vehicle implements Refuelable {
 
  @Override
  public void refuel() {
-     System.out.println("Refueling truck with diesel.");
+     System.out.println("Refueling " + brand + " truck using diesel.");
  }
 }
 

@@ -9,8 +9,8 @@ public class MyApplication {
  //4. In your Main Application
  public static void main(String[] args) {
      // create one Car and one truck 
-     Car car = new Car("Toyota", 4);
-     Truck truck = new Truck("Isuzu", 6);
+     Car car = new Car("BYD", 4);
+     Truck truck = new Truck("Hino", 18);
 
      System.out.println(car);
      System.out.println(truck);
