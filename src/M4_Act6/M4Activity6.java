@@ -1,123 +1,99 @@
 package M4_Act6;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-//No external imports needed
-
-//============================================================================
-//1. Custom Exceptions
-//============================================================================
-
+// -------------------- 1) Custom Exceptions --------------------
 class InvalidAmountException extends Exception {
- public InvalidAmountException(String message) { super(message); }
+    public InvalidAmountException(String message) { super(message); }
 }
 
 class InsufficientFundsException extends Exception {
- private final double balance;
- private final double requestedAmount;
+    private final double balance;
+    private final double requestedAmount;
 
- public InsufficientFundsException(String message, double balance, double requestedAmount) {
-     super(message);
-     this.balance = balance;
-     this.requestedAmount = requestedAmount;
- }
- public double getBalance() { return balance; }
- public double getRequestedAmount() { return requestedAmount; }
+    public InsufficientFundsException(String message, double balance, double requestedAmount) {
+        super(message);
+        this.balance = balance;
+        this.requestedAmount = requestedAmount;
+    }
+    public double getBalance() { return balance; }
+    public double getRequestedAmount() { return requestedAmount; }
 }
 
-//============================================================================
-//2. Functional Interface
-//============================================================================
+// -------------------- 2) Functional Interface --------------------
 @FunctionalInterface
 interface BankTestOperation {
- void execute() throws InvalidAmountException, InsufficientFundsException;
+    void execute() throws InvalidAmountException, InsufficientFundsException;
 }
 
-//============================================================================
-//3. BankAccount Class
-//============================================================================
+// -------------------- 3) BankAccount --------------------
 class BankAccount {
+    private static final Logger log = LoggerFactory.getLogger(BankAccount.class);
+    private double balance = 10_000; // ₱10,000 initial
 
- private double balance = 10000;   // Starting balance ₱10,000
+    // 4) withdraw(double)
+    public void withdraw(double amount) throws InvalidAmountException, InsufficientFundsException {
+        log.info("Withdrawal requested: ₱{}", amount);
 
- // 4) withdraw(double amount)
- public void withdraw(double amount) throws InvalidAmountException, InsufficientFundsException {
-     logInfo(String.format("Withdrawal requested: ₱%.2f", amount));
+        if (amount <= 0) {
+            log.error("Invalid withdrawal amount: {}", amount);
+            throw new InvalidAmountException("Amount must be greater than 0!");
+        }
+        if (amount > balance) {
+            log.warn("Insufficient funds! Balance: ₱{}, Requested: ₱{}", balance, amount);
+            throw new InsufficientFundsException("Insufficient funds!", balance, amount);
+        }
+        balance -= amount;
+        log.info("Withdrawal completed: ₱{}, New balance: ₱{}", amount, balance);
+    }
 
-     if (amount <= 0) {
-         logError("Invalid withdrawal amount: " + amount);
-         throw new InvalidAmountException("Amount must be greater than 0!");
-     }
+    // 5) deposit(double)
+    public void deposit(double amount) throws InvalidAmountException {
+        log.info("Deposit requested: ₱{}", amount);
 
-     if (amount > balance) {
-         logWarn(String.format("Insufficient funds! Balance: ₱%.2f, Requested: ₱%.2f", balance, amount));
-         throw new InsufficientFundsException("Insufficient funds!", balance, amount);
-     }
+        if (amount <= 0) {
+            log.error("Invalid deposit amount: {}", amount);
+            throw new InvalidAmountException("Amount must be greater than 0!");
+        }
+        if (amount > 50_000) {
+            log.warn("Large deposit detected: ₱{}", amount);
+        }
+        balance += amount;
+        log.info("Deposit completed: ₱{}, New balance: ₱{}", amount, balance);
+    }
 
-     balance -= amount;
-     logInfo(String.format("Withdrawal completed: ₱%.2f, New balance: ₱%.2f", amount, balance));
- }
-
- // 5) deposit(double amount)
- public void deposit(double amount) throws InvalidAmountException {
-     logInfo(String.format("Deposit requested: ₱%.2f", amount));
-
-     if (amount <= 0) {
-         logError("Invalid deposit amount: " + amount);
-         throw new InvalidAmountException("Amount must be greater than 0!");
-     }
-
-     if (amount > 50000) {
-         logWarn(String.format("Large deposit detected: ₱%.2f", amount));
-     }
-
-     balance += amount;
-     logInfo(String.format("Deposit completed: ₱%.2f, New balance: ₱%.2f", amount, balance));
- }
-
- public double getBalance() { return balance; }
-
- // Simple logger substitutes
- private void logInfo(String msg) { System.out.println("[INFO] " + msg); }
- private void logWarn(String msg) { System.out.println("[WARN] " + msg); }
- private void logError(String msg) { System.err.println("[ERROR] " + msg); }
+    public double getBalance() { return balance; }
 }
 
-//============================================================================
-//6. runTest() helper + 7. Tests in main()
-//============================================================================
+// -------------------- 6) runTest helper + 7) Tests --------------------
 public class M4Activity6 {
+    private static final Logger log = LoggerFactory.getLogger(M4Activity6.class);
 
- public static void runTest(BankTestOperation operation, String operationName) {
-     System.out.println("\n[TEST] Running: " + operationName);
-     try {
-         operation.execute();
-     } catch (InvalidAmountException e) {
-         System.err.println("[ERROR] InvalidAmountException during " + operationName + ": " + e.getMessage());
-     } catch (InsufficientFundsException e) {
-         System.err.println(String.format(
-             "[ERROR] InsufficientFundsException during %s: Balance ₱%.2f, Requested ₱%.2f",
-             operationName, e.getBalance(), e.getRequestedAmount()
-         ));
-     }
- }
+    public static void runTest(BankTestOperation op, String name) {
+        log.info("Running test: {}", name);
+        try {
+            op.execute();
+        } catch (InvalidAmountException e) {
+            log.error("InvalidAmountException during {}: {}", name, e.getMessage());
+        } catch (InsufficientFundsException e) {
+            log.error("InsufficientFunds during {}: Balance: ₱{}, Requested: ₱{}",
+                    name, e.getBalance(), e.getRequestedAmount());
+        }
+    }
 
- public static void main(String[] args) {
-     BankAccount account = new BankAccount();
+    public static void main(String[] args) {
+        // (Optional) ensure logs/ exists when running from some IDEs/packagers
+        try { new java.io.File("logs").mkdirs(); } catch (Exception ignore) {}
 
-     // Test 1: Valid deposit
-     runTest(() -> account.deposit(5000), "Deposit");
+        BankAccount account = new BankAccount();
 
-     // Test 2: Invalid withdrawal (negative)
-     runTest(() -> account.withdraw(-3000), "Withdrawal");
+        runTest(() -> account.deposit(5000), "Deposit");
+        runTest(() -> account.withdraw(-3000), "Withdrawal");
+        runTest(() -> account.deposit(50001), "Deposit");
+        runTest(() -> account.withdraw(20000), "Withdrawal");
+               runTest(() -> account.deposit(60000), "Deposit");
 
-     // Test 3: Large deposit (> 50,000) should WARN but continue
-     runTest(() -> account.deposit(50001), "Deposit");
-
-     // Test 4: Insufficient funds
-     runTest(() -> account.withdraw(20000), "Withdrawal");
-
-     // Test 5: Another valid deposit
-     runTest(() -> account.deposit(60000), "Deposit");
- }
+        log.info("All tests completed.");
+    }
 }
-

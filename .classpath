@@ -6,5 +6,8 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="C:/Users/mambenolirao/Documents/workspace-spring-tools-for-eclipse-4.31.0.RELEASE/M4_Act6/lib/logback-classic-1.4.11.jar"/>
+	<classpathentry kind="lib" path="C:/Users/mambenolirao/Documents/workspace-spring-tools-for-eclipse-4.31.0.RELEASE/M4_Act6/lib/logback-core-1.4.11.jar"/>
+	<classpathentry kind="lib" path="C:/Users/mambenolirao/Documents/workspace-spring-tools-for-eclipse-4.31.0.RELEASE/M4_Act6/lib/slf4j-api-2.0.9.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
